@@ -1,0 +1,528 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SystemGuard - Security Scanner</title>
+
+<style>
+:root {
+  --navy: #132238;
+  --blue: #287cff;
+  --ink: #172f50;
+  --muted: #6a819e;
+  --line: #e1eaf4;
+  --bg: #f4f8fd;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.5 "Segoe UI", Arial, sans-serif;
+}
+
+header {
+  background: var(--navy);
+  color: white;
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.brand small {
+  display: block;
+  font-size: 12px;
+  color: #b6cbe7;
+  font-weight: normal;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: calc(100vh - 70px);
+}
+
+aside {
+  background: #1d3049;
+  padding: 22px 0;
+  color: #c5d5e9;
+}
+
+nav a {
+  display: block;
+  padding: 14px 24px;
+  color: inherit;
+  text-decoration: none;
+}
+
+nav a.active {
+  background: var(--blue);
+  color: white;
+}
+
+main {
+  padding: 28px;
+  max-width: 1500px;
+  width: 100%;
+}
+
+h1 { margin-top: 0; }
+
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 14px #244c7608;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.metric {
+  background: #f8fbff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 16px;
+}
+
+.metric span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.metric strong {
+  display: block;
+  font-size: 27px;
+}
+
+label {
+  display: block;
+  margin: 12px 0;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--blue);
+  margin-right: 8px;
+}
+
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--blue);
+  color: white;
+}
+
+.secondary {
+  background: #edf3fb;
+  color: var(--ink);
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.status {
+  color: var(--muted);
+  margin-top: 12px;
+}
+
+.progress {
+  height: 7px;
+  background: #e9f0f8;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.progress div {
+  height: 100%;
+  width: 0;
+  background: var(--blue);
+  transition: width .2s;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+  font-size: 13px;
+}
+
+th {
+  background: #f1f6fb;
+  text-align: left;
+  color: #496586;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.severity {
+  font-weight: 700;
+}
+
+.High { color: #c65b10; }
+.Medium { color: #987000; }
+.Low { color: #175fb5; }
+.Critical { color: #bd2424; }
+
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  aside { display: none; }
+  main { padding: 16px; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="brand">
+    🛡 SystemGuard
+    <small>System Vulnerability Scanner</small>
+  </div>
+  <div>Security Dashboard</div>
+</header>
+
+<div class="layout">
+<aside>
+  <nav>
+    <a href="#overview" class="active">⌂ Overview</a>
+    <a href="#scan">⌕ System Scan</a>
+    <a href="#findings">☷ Findings</a>
+  </nav>
+</aside>
+
+<main id="overview">
+  <h1>System Security Overview</h1>
+  <p class="subtitle">
+    Run browser-based security checks and inspect selected files
+    for common warning signs.
+  </p>
+
+  <section class="card">
+    <h2>Security Snapshot</h2>
+
+    <div class="metrics">
+      <div class="metric">
+        <span>Files Checked</span>
+        <strong id="files">0</strong>
+      </div>
+      <div class="metric">
+        <span>Total Warnings</span>
+        <strong id="warnings">0</strong>
+      </div>
+      <div class="metric">
+        <span>High Priority</span>
+        <strong id="high">0</strong>
+      </div>
+      <div class="metric">
+        <span>Checks Enabled</span>
+        <strong id="enabled">4</strong>
+      </div>
+    </div>
+
+    <h3 id="scan">Scan Configuration</h3>
+
+    <label>
+      <input type="checkbox" id="https" checked>
+      Check whether the page uses HTTPS
+    </label>
+
+    <label>
+      <input type="checkbox" id="filetypes" checked>
+      Flag executable and script file types
+    </label>
+
+    <label>
+      <input type="checkbox" id="scripts" checked>
+      Look for suspicious script indicators
+    </label>
+
+    <label>
+      <input type="checkbox" id="dependencies" checked>
+      Identify dependency manifests
+    </label>
+
+    <p>
+      <button class="primary" id="start">🛡 Run Security Check</button>
+      <button class="secondary" id="select">＋ Select Files</button>
+      <input type="file" id="picker" multiple hidden>
+    </p>
+
+    <div class="status" id="status">
+      Ready. Run the security check to begin.
+    </div>
+
+    <div class="progress">
+      <div id="bar"></div>
+    </div>
+  </section>
+
+  <section class="card" id="findings">
+    <h2>Scan Findings</h2>
+    <p id="summary">No scan has been run yet.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Severity</th>
+            <th>Check</th>
+            <th>Result</th>
+            <th>Recommended Action</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr>
+            <td colspan="4">Run a scan to view findings.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      <button class="secondary" id="export" disabled>
+        Export CSV Report
+      </button>
+    </p>
+  </section>
+
+  <section class="card">
+    <strong>Important security limitation</strong>
+    <p>
+      This browser application performs basic heuristic checks only.
+      It cannot inspect all installed applications, running processes,
+      system permissions, operating-system patches, or confirm malware.
+      Use a trusted endpoint security tool for a complete system scan.
+    </p>
+  </section>
+</main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+let selectedFiles = [];
+let findings = [];
+
+$("select").onclick = () => $("picker").click();
+
+$("picker").onchange = () => {
+  selectedFiles = Array.from($("picker").files || []);
+  $("status").textContent =
+    `Selected ${selectedFiles.length} file(s).`;
+};
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[ch]);
+}
+
+$("start").onclick = async () => {
+  const options = {
+    https: $("https").checked,
+    filetypes: $("filetypes").checked,
+    scripts: $("scripts").checked,
+    dependencies: $("dependencies").checked
+  };
+
+  $("enabled").textContent =
+    Object.values(options).filter(Boolean).length;
+
+  $("start").disabled = true;
+  $("status").textContent = "Running security checks...";
+  document.querySelector(".progress").style.display = "block";
+  $("bar").style.width = "10%";
+
+  findings = [];
+
+  if (options.https && location.protocol !== "https:") {
+    findings.push({
+      severity: "Medium",
+      check: "Transport security",
+      result: "Page is not using HTTPS.",
+      action: "Use HTTPS when hosting this application online."
+    });
+  }
+
+  let checked = 0;
+
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const file = selectedFiles[i];
+    const name = file.name.toLowerCase();
+
+    checked++;
+
+    if (
+      options.filetypes &&
+      /\.(exe|dll|scr|bat|cmd|ps1|vbs|jar|msi)$/i.test(name)
+    ) {
+      findings.push({
+        severity: /\.(bat|cmd|vbs|scr)$/i.test(name)
+          ? "High" : "Medium",
+        check: "Executable or script file",
+        result: `${file.name} can contain executable code.`,
+        action: "Verify the source and scan with trusted antivirus."
+      });
+    }
+
+    if (
+      options.dependencies &&
+      /(package(-lock)?\.json|yarn\.lock|requirements\.txt|pom\.xml|composer\.lock)$/i.test(name)
+    ) {
+      findings.push({
+        severity: "Low",
+        check: "Dependency manifest",
+        result: `${file.name} may list software dependencies.`,
+        action: "Run a package-specific vulnerability audit."
+      });
+    }
+
+    if (
+      options.scripts &&
+      file.size < 750000 &&
+      /\.(js|html?|ps1|bat|cmd|vbs|sh|py)$/i.test(name)
+    ) {
+      try {
+        const content = await file.text();
+
+        if (/powershell.{0,80}(-enc|-encodedcommand)/i.test(content)) {
+          findings.push({
+            severity: "High",
+            check: "Encoded PowerShell indicator",
+            result: `Potential encoded-command pattern in ${file.name}.`,
+            action: "Review the script and verify its origin."
+          });
+        }
+
+        if (/\beval\s*\(\s*(atob|unescape|decodeURIComponent)\s*\(/i.test(content)) {
+          findings.push({
+            severity: "Medium",
+            check: "Potential script obfuscation",
+            result: `Dynamic evaluation and decoding found in ${file.name}.`,
+            action: "Review the code for unexpected behavior."
+          });
+        }
+      } catch (error) {
+        // The browser may not be able to read every selected file.
+      }
+    }
+
+    $("bar").style.width =
+      `${10 + 80 * (i + 1) / Math.max(selectedFiles.length, 1)}%`;
+
+    if (i % 10 === 0) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+  }
+
+  if (options.filetypes && selectedFiles.length === 0) {
+    findings.push({
+      severity: "Low",
+      check: "File inspection skipped",
+      result: "No files were selected for inspection.",
+      action: "Select files you are authorized to inspect."
+    });
+  }
+
+  $("files").textContent = checked;
+  $("warnings").textContent = findings.length;
+  $("high").textContent = findings.filter(
+    item => item.severity === "High" ||
+            item.severity === "Critical"
+  ).length;
+
+  $("summary").textContent =
+    `Completed ${new Date().toLocaleString()}. ` +
+    `${checked} file(s) inspected; ${findings.length} warning(s).`;
+
+  $("rows").innerHTML = findings.length
+    ? findings.map(item => `
+      <tr>
+        <td class="severity ${item.severity}">
+          ${item.severity}
+        </td>
+        <td>${escapeHTML(item.check)}</td>
+        <td>${escapeHTML(item.result)}</td>
+        <td>${escapeHTML(item.action)}</td>
+      </tr>
+    `).join("")
+    : `<tr><td colspan="4">
+        No warnings from these checks. This does not guarantee
+        that the system is secure.
+       </td></tr>`;
+
+  $("status").textContent = "Security check completed.";
+  $("bar").style.width = "100%";
+  $("start").disabled = false;
+  $("export").disabled = findings.length === 0;
+};
+
+$("export").onclick = () => {
+  const data = [
+    ["Severity", "Check", "Result", "Recommended Action"],
+    ...findings.map(item => [
+      item.severity, item.check, item.result, item.action
+    ])
+  ];
+
+  const csv = data.map(row =>
+    row.map(value =>
+      '"' + String(value).replace(/"/g, '""') + '"'
+    ).join(",")
+  ).join("\r\n");
+
+  const url = URL.createObjectURL(
+    new Blob([csv], { type: "text/csv;charset=utf-8" })
+  );
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "systemguard-report.csv";
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
+</script>
+</body>
+</html>
